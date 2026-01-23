@@ -16,7 +16,9 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 import { useForm } from "@tanstack/react-form";
+import { toast } from "sonner";
 import * as z from "zod";
 
 const formSchema = z.object({
@@ -24,7 +26,13 @@ const formSchema = z.object({
   password: z.string().min(8, "Min length 8"),
   email: z.email(),
 });
-
+const handleGoogleLogin = async () => {
+  const data = authClient.signIn.social({
+    provider: "google",
+    callbackURL: "http://localhost:3000",
+  });
+  console.log(data);
+};
 export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
   const form = useForm({
     defaultValues: {
@@ -36,9 +44,21 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log(value);
+      const toastId = toast.loading("Creating user");
+      try {
+        const { data, error } = await authClient.signUp.email(value);
 
-      console.log("submit ");
+        if (error) {
+          toast.error(error.message, {
+            id: toastId,
+          });
+          return;
+        }
+
+        toast.success("user created succesfully", { id: toastId });
+      } catch (error) {
+        toast.error("Something went wrong ", { id: toastId });
+      }
     },
   });
   return (
@@ -133,10 +153,18 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
           </FieldGroup>
         </form>
 
-        <CardFooter className="flex justify-end">
+        <CardFooter className="flex flex-col gap-5 justify-end mt-5">
           {" "}
-          <Button type="submit" form="login-form">
-            Submit
+          <Button type="submit" form="login-form" className="w-full">
+            Register
+          </Button>
+          <Button
+            onClick={() => handleGoogleLogin()}
+            variant="outline"
+            type="button"
+            className="w-full"
+          >
+            Continue with Google
           </Button>
         </CardFooter>
       </CardContent>
