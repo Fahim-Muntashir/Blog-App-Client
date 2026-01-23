@@ -1,4 +1,5 @@
 "use server";
+
 import { blogService } from "@/services/blog.service";
 
 export const getBlogs = async () => {

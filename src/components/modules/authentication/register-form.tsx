@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -8,25 +8,39 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import{useForm} from "@tanstack/react-form";
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { useForm } from "@tanstack/react-form";
+import * as z from "zod";
+
+const formSchema = z.object({
+  name: z.string().min(1, "this field is required"),
+  password: z.string().min(8, "Min length 8"),
+  email: z.email(),
+});
 
 export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+    validators: {
+      onSubmit: formSchema,
+    },
+    onSubmit: async ({ value }) => {
+      console.log(value);
 
-  const form =useForm(
-    {
-      defaultValues:{
-        name:"",
-        email:"",
-        password:""
-      },
-      onSubmit:async({value})=>{
-console.log(value)
-
-console.log("submit ")
-      }
-    }
-  )
+      console.log("submit ");
+    },
+  });
   return (
     <Card {...props}>
       <CardHeader>
@@ -36,17 +50,96 @@ console.log("submit ")
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form id="login-form" onSubmit={(e)=>{
-        e.preventDefault();
-        form.handleSubmit()
-        }}>
-       
-
+        <form
+          id="login-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <FieldGroup>
+            <form.Field
+              name="name"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field>
+                    <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                    <Input
+                      type="text"
+                      name={field.name}
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                      }}
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+            <form.Field
+              name="email"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field>
+                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                    <Input
+                      type="email"
+                      name={field.name}
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                      }}
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+            <form.Field
+              name="password"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field>
+                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                    <Input
+                      type="password"
+                      name={field.name}
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                      }}
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+          </FieldGroup>
         </form>
 
-        <CardFooter className="flex justify-end">       <Button type="submit" form ="login-form">Submit</Button>
-</CardFooter>
+        <CardFooter className="flex justify-end">
+          {" "}
+          <Button type="submit" form="login-form">
+            Submit
+          </Button>
+        </CardFooter>
       </CardContent>
     </Card>
-  )
+  );
 }
